@@ -287,7 +287,7 @@
         <div class="input-section">
             <div class="input-group">
                 <label for="urlInput">NARU 시스템 링크를 입력하세요:</label>
-                <input type="url" id="urlInput" placeholder="http://192.168.200.251:8080/NaeilNCCP/play/pl_PO01_mp3.do?..." />
+                <input type="url" id="urlInput" placeholder="예시: http://192.168.200.251:8080/NaeilNCCP/play/pl_PO01_mp3.do?uid=N617&sdate=..." />
             </div>
 
             <div class="button-group">
@@ -451,10 +451,9 @@
             }
         });
 
-        // 예시 데이터로 시작
+        // 페이지 로드시 입력창 비우기
         window.onload = function() {
-            const exampleUrl = 'http://192.168.200.251:8080/NaeilNCCP/play/pl_PO01_mp3.do?uid=N617&sdate=20250716112151&stime=112151&tel_num=5390&server_code=1&rec_FileName=REC/2025/07/16/NARU_20250716112151_05390_93';
-            document.getElementById('urlInput').value = exampleUrl;
+            document.getElementById('urlInput').value = '';
         };
     </script>
 </body>

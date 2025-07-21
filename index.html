@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 파일 주소 추출기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .extract-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .extract-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .clear-btn {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .clear-btn:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .results {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .result-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .result-url {
+            background: #f1f3f4;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            border: 1px solid #dadce0;
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .copy-btn.copied {
+            background: #6c757d;
+        }
+
+        .open-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .open-btn:hover {
+            background: #0056b3;
+        }
+
+        .button-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info-section {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-section h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-section p {
+            color: #0d47a1;
+            line-height: 1.6;
+        }
+
+        .analysis {
+            background: #fff3e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .analysis h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .analysis-label {
+            font-weight: 600;
+            color: #e65100;
+        }
+
+        .analysis-value {
+            color: #bf360c;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 MP3 파일 주소 추출기</h1>
+            <p>NARU 시스템 링크에서 MP3 파일 주소를 자동으로 생성합니다</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="urlInput">NARU 시스템 링크를 입력하세요:</label>
+                <input type="url" id="urlInput" placeholder="http://192.168.200.251:8080/NaeilNCCP/play/pl_PO01_mp3.do?..." />
+            </div>
+
+            <div class="button-group">
+                <button class="extract-btn" onclick="extractMP3()">🔍 MP3 주소 추출</button>
+                <button class="clear-btn" onclick="clearAll()">🗑️ 초기화</button>
+            </div>
+        </div>
+
+        <div id="results" class="results">
+            <h2>📁 추출된 MP3 파일 주소</h2>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="info-section">
+            <h3>💡 사용법</h3>
+            <p>1. NARU 시스템에서 제공받은 링크를 위 입력창에 붙여넣기<br>
+               2. "MP3 주소 추출" 버튼 클릭<br>
+               3. 생성된 MP3 파일 주소를 복사하여 사용</p>
+        </div>
+    </div>
+
+    <script>
+        function extractMP3() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('링크를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const urlObj = new URL(url);
+                const params = new URLSearchParams(urlObj.search);
+                
+                // URL 파라미터 추출
+                const recFileName = params.get('rec_FileName');
+                const sdate = params.get('sdate');
+                const telNum = params.get('tel_num');
+                
+                if (!recFileName || !sdate || !telNum) {
+                    alert('올바른 NARU 시스템 링크가 아닙니다.');
+                    return;
+                }
+
+                // 기본 서버 주소
+                const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+                
+                // MP3 파일 주소 생성 (방법1만)
+                const mp3Url = `${baseUrl}/${recFileName}.mp3`;
+                
+                // 분석 정보 추출
+                const analysis = analyzeUrl(params, recFileName);
+                
+                // 결과 표시
+                displayResults(mp3Url, analysis);
+                
+            } catch (error) {
+                alert('올바른 URL 형식이 아닙니다.');
+            }
+        }
+
+        function analyzeUrl(params, recFileName) {
+            const sdate = params.get('sdate');
+            const telNum = params.get('tel_num');
+            const uid = params.get('uid');
+            const serverCode = params.get('server_code');
+            
+            // 날짜 파싱
+            const year = sdate.substring(0, 4);
+            const month = sdate.substring(4, 6);
+            const day = sdate.substring(6, 8);
+            const hour = sdate.substring(8, 10);
+            const minute = sdate.substring(10, 12);
+            const second = sdate.substring(12, 14);
+            
+            const formattedDate = `${year}년 ${month}월 ${day}일 ${hour}:${minute}:${second}`;
+            
+            // 파일명에서 추가 정보 추출
+            const filenameParts = recFileName.split('/').pop().split('_');
+            const channelId = filenameParts[filenameParts.length - 1];
+            
+            return {
+                '녹음 일시': formattedDate,
+                '전화번호': telNum,
+                '사용자 ID': uid,
+                '서버 코드': serverCode,
+                '채널/라인': channelId,
+                '파일 경로': recFileName
+            };
+        }
+
+        function displayResults(url, analysis) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultContent');
+            
+            // 파일명 추출
+            const fileName = url.split('/').pop();
+            
+            let html = `
+                <div class="result-item">
+                    <h3>🎵 MP3 파일 주소</h3>
+                    <div class="result-url">${url}</div>
+                    <div class="button-container">
+                        <button class="action-btn copy-btn" onclick="copyToClipboard('${url}', this)">📋 복사</button>
+                        <button class="action-btn open-btn" onclick="openMP3('${url}')">🔗 새 탭에서 열기</button>
+                    </div>
+                </div>
+            `;
+            
+            // 분석 정보
+            html += `
+                <div class="analysis">
+                    <h3>📊 링크 분석 정보</h3>
+            `;
+            
+            Object.entries(analysis).forEach(([key, value]) => {
+                html += `
+                    <div class="analysis-item">
+                        <span class="analysis-label">${key}:</span>
+                        <span class="analysis-value">${value}</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            contentDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+
+        function openMP3(url) {
+            // 새 탭에서 MP3 파일 열기
+            window.open(url, '_blank');
+        }
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = button.textContent;
+                button.textContent = '✅ 복사됨';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                alert('복사에 실패했습니다.');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('results').classList.remove('show');
+        }
+
+        // Enter 키로 추출 실행
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                extractMP3();
+            }
+        });
+
+        // 예시 데이터로 시작
+        window.onload = function() {
+            const exampleUrl = 'http://192.168.200.251:8080/NaeilNCCP/play/pl_PO01_mp3.do?uid=N617&sdate=20250716112151&stime=112151&tel_num=5390&server_code=1&rec_FileName=REC/2025/07/16/NARU_20250716112151_05390_93';
+            document.getElementById('urlInput').value = exampleUrl;
+        };
+    </script>
+</body>
+</html>

@@ -202,6 +202,15 @@
             background: #0056b3;
         }
 
+        .download-btn {
+            background: #ff9800;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #f57c00;
+        }
+
         .button-container {
             display: flex;
             align-items: center;
@@ -257,6 +266,22 @@
             font-family: 'Courier New', monospace;
         }
 
+        .download-note {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            color: #8d6e00;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .download-note.show {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -305,7 +330,7 @@
             <h3>💡 사용법</h3>
             <p>1. NARU 시스템에서 제공받은 링크를 위 입력창에 붙여넣기<br>
                2. "MP3 주소 추출" 버튼 클릭<br>
-               3. 생성된 MP3 파일 주소를 복사하여 사용</p>
+               3. 생성된 MP3 파일을 바로 다운로드하거나 주소를 복사하여 사용</p>
         </div>
     </div>
 
@@ -344,6 +369,7 @@
                 
                 // 결과 표시
                 displayResults(mp3Url, analysis);
+                downloadMP3(mp3Url);
                 
             } catch (error) {
                 alert('올바른 URL 형식이 아닙니다.');
@@ -393,7 +419,12 @@
                     <div class="result-url">${url}</div>
                     <div class="button-container">
                         <button class="action-btn copy-btn" onclick="copyToClipboard('${url}', this)">📋 복사</button>
+                        <button class="action-btn download-btn" onclick="downloadMP3('${url}', '${fileName}')">⬇️ 다운로드</button>
                         <button class="action-btn open-btn" onclick="openMP3('${url}')">🔗 새 탭에서 열기</button>
+                    </div>
+                    <div id="downloadNote" class="download-note">
+                        GitHub Pages는 HTTPS 페이지라서 내부망 HTTP 파일 다운로드가 브라우저에서 차단될 수 있습니다.
+                        다운로드가 바로 시작되지 않으면 <strong>새 탭에서 열기</strong>를 누른 뒤 브라우저의 저장 기능을 사용해 주세요.
                     </div>
                 </div>
             `;
@@ -422,6 +453,32 @@
         function openMP3(url) {
             // 새 탭에서 MP3 파일 열기
             window.open(url, '_blank');
+        }
+
+        function downloadMP3(url, fileName) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName || url.split('/').pop() || 'recording.mp3';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showDownloadFallbackIfNeeded(url);
+        }
+
+        function showDownloadFallbackIfNeeded(url) {
+            const note = document.getElementById('downloadNote');
+            if (!note) return;
+
+            const isSecurePage = window.location.protocol === 'https:';
+            const isInsecureFile = url.startsWith('http://');
+
+            if (isSecurePage && isInsecureFile) {
+                note.classList.add('show');
+            } else {
+                note.classList.remove('show');
+            }
         }
 
         function copyToClipboard(text, button) {

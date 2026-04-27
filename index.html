@@ -455,16 +455,31 @@
             window.open(url, '_blank');
         }
 
-        function downloadMP3(url, fileName) {
+        async function downloadMP3(url, fileName) {
+            const downloadFileName = fileName || url.split('/').pop() || 'recording.mp3';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('MP3 파일을 가져오지 못했습니다.');
+
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                triggerDownload(blobUrl, downloadFileName);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+            } catch (error) {
+                triggerDownload(url, downloadFileName);
+                showDownloadFallbackIfNeeded(url);
+            }
+        }
+
+        function triggerDownload(url, fileName) {
             const link = document.createElement('a');
             link.href = url;
-            link.download = fileName || url.split('/').pop() || 'recording.mp3';
+            link.download = fileName;
             link.rel = 'noopener';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            showDownloadFallbackIfNeeded(url);
         }
 
         function showDownloadFallbackIfNeeded(url) {
